@@ -1,6 +1,7 @@
 import os
 import sys
 import pygame as pg
+import random
 
 
 WIDTH, HEIGHT = 1100, 650
@@ -11,9 +12,19 @@ def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")    
+    # こうかとん初期化
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
+#   爆弾初期化
+    bb_img = pg.Surface((20,30))  # 爆弾用のからのSurface
+    pg.draw.circle(bb_img,(255,0,0),(10,10),10)   # 半径10の赤い丸を描画
+    bb_img.set_colorkey((0, 0, 0))  # 円の周りの四角を消す
+    bb_rct = bb_img.get_rect()
+    bb_rct.centerx = random.randint(0,WIDTH)#初期座標横
+    bb_rct.centery = random.randint(0,HEIGHT)#初期座標縦
+    vx,vy = 5,5
+
     DELTA = {
         pg.K_UP:(0,-5),#右上矢印キー
         pg.K_DOWN:(0,5),#下矢印キー
@@ -44,7 +55,10 @@ def main():
                 sum_mv[1] += mv[1]#縦方向の移動量
         
         kk_rct.move_ip(sum_mv)
+        bb_rct.move_ip(vx,vy)#速度の設定
+
         screen.blit(kk_img, kk_rct)
+        screen.blit(bb_img, bb_rct)
         pg.display.update()
         tmr += 1
         clock.tick(50)
