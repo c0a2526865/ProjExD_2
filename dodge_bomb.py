@@ -8,6 +8,20 @@ WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+def check_bound(rct: pg.Rect) -> tuple[bool,bool]:  # 型ヒント、関数アノテーション
+    """
+    引数：こうかとんRect or 爆弾Rect
+    戻り値：判定結果タプル（横方向判定結果、縦方向判定結果）
+    TRUE：画面内　/　FALSE：画面外
+    """
+    yoko,tate = True,True
+    if rct.left < 0 or WIDTH < rct.right:   # 横方向の判定
+        yoko = False
+    if rct.top < 0 or HEIGHT < rct.bottom:   # 縦方向の判定
+        tate = False
+    return yoko,tate
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -37,6 +51,9 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT: 
                 return
+        if kk_rct.colliderect(bb_rct):
+            print("GAME　OVER")
+            return
         screen.blit(bg_img, [0, 0]) 
 
         key_lst = pg.key.get_pressed()
@@ -55,9 +72,17 @@ def main():
                 sum_mv[1] += mv[1]#縦方向の移動量
         
         kk_rct.move_ip(sum_mv)
-        bb_rct.move_ip(vx,vy)#速度の設定
-
+        if check_bound(kk_rct) != (True,True):
+            kk_rct.move_ip(-sum_mv[0],-sum_mv[1])    # 動きをなかったことにする
         screen.blit(kk_img, kk_rct)
+
+
+        bb_rct.move_ip(vx,vy)#速度の設定
+        yoko,tate = check_bound(bb_rct)
+        if not yoko:  # 横方向にはみ出ていたら
+            vx *= -1
+        if not tate:  # 縦方向にはみ出ていたら
+            vy *= -1
         screen.blit(bb_img, bb_rct)
         pg.display.update()
         tmr += 1
